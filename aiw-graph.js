@@ -133,6 +133,43 @@
     return res.json();
   }
 
+  /* ---- resolve the shared destination folder by name ----- */
+  var _target = null;
+  function resolveTarget(token) {
+    if (_target) return Promise.resolve(_target);
+    var name = CFG.targetFolderName;
+    var H = { "Authorization": "Bearer " + token };
+    // 1) the signed-in user's OWN OneDrive (the folder's owner, e.g. Shawn)
+    return fetch(GRAPH + "/me/drive/root:/" + encodeURIComponent(name), { headers: H })
+      .then(function (res) {
+        if (res.ok) {
+          return res.json().then(function (it) {
+            _target = { driveId: it.parentReference.driveId, itemId: it.id };
+            return _target;
+          });
+        }
+        // 2) a folder of that name SHARED with the signed-in user (e.g. MTR)
+        return fetch(GRAPH + "/me/drive/sharedWithMe", { headers: H })
+          .then(function (r) { return r.json(); })
+          .then(function (sw) {
+            var m = (sw.value || []).filter(function (i) { return i.remoteItem && i.name === name; })[0];
+            if (m && m.remoteItem) {
+              _target = { driveId: m.remoteItem.parentReference.driveId, itemId: m.remoteItem.id };
+              return _target;
+            }
+            // 3) not found anywhere -> create it in the signed-in user's own drive
+            return fetch(GRAPH + "/me/drive/root/children", {
+              method: "POST",
+              headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+              body: JSON.stringify({ name: name, folder: {}, "@microsoft.graph.conflictBehavior": "fail" })
+            }).then(handleRes).then(function (it) {
+              _target = { driveId: it.parentReference.driveId, itemId: it.id };
+              return _target;
+            });
+          });
+      });
+  }
+
   /* ---- upload -------------------------------------------- */
   function uploadPdf(blob, filename, formKey) {
     var folderName = (CFG.folders && CFG.folders[formKey]) || "Safety Records";
@@ -140,29 +177,31 @@
       var auth = { "Authorization": "Bearer " + token };
 
       // MODE 1: shared destination — everything into one fixed folder
-      // (e.g. Shawn's "09 SAFETY"), regardless of who is signed in.
-      if (CFG.targetDriveId && CFG.targetFolderId) {
-        var base = GRAPH + "/drives/" + CFG.targetDriveId + "/items/" + CFG.targetFolderId;
-        // create the per-form subfolder if it isn't there yet (ignore 409)
-        return fetch(base + "/children", {
-          method: "POST",
-          headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: folderName, folder: {},
-            "@microsoft.graph.conflictBehavior": "fail"
-          })
-        }).then(function () {
-          var url = base + ":/" + encPath(folderName + "/" + filename) + ":/content";
-          return fetch(url, {
-            method: "PUT",
-            headers: { "Authorization": "Bearer " + token, "Content-Type": "application/pdf" },
-            body: blob
+      // (found BY NAME), regardless of who is signed in.
+      if (CFG.targetFolderName) {
+        return resolveTarget(token).then(function (t) {
+          var base = GRAPH + "/drives/" + t.driveId + "/items/" + t.itemId;
+          // create the per-form subfolder if it isn't there yet (ignore 409)
+          return fetch(base + "/children", {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: folderName, folder: {},
+              "@microsoft.graph.conflictBehavior": "fail"
+            })
+          }).then(function () {
+            var url = base + ":/" + encPath(folderName + "/" + filename) + ":/content";
+            return fetch(url, {
+              method: "PUT",
+              headers: { "Authorization": "Bearer " + token, "Content-Type": "application/pdf" },
+              body: blob
+            });
+          }).then(handleRes).then(function (item) {
+            return {
+              ok: true, webUrl: item.webUrl, name: item.name,
+              folder: (CFG.targetLabel || "OneDrive") + " / " + folderName
+            };
           });
-        }).then(handleRes).then(function (item) {
-          return {
-            ok: true, webUrl: item.webUrl, name: item.name,
-            folder: (CFG.targetLabel || "OneDrive") + " / " + folderName
-          };
         });
       }
 
