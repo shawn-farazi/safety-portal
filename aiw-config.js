@@ -9,12 +9,12 @@ window.AIW_CONFIG = {
 
   /* 1) FILL IN - Application (client) ID from the Entra app registration.
         Looks like: 11111111-2222-3333-4444-555555555555            */
-  clientId: "PASTE_CLIENT_ID_HERE",
+  clientId: "44feae02-5a01-4ce6-836f-2b5f5a68afc6",
 
   /* 2) FILL IN - Your Microsoft 365 Directory (tenant) ID, also from
         the app registration overview page. Using the tenant ID (instead
         of "organizations") keeps sign-in locked to your company only.  */
-  tenantId: "PASTE_TENANT_ID_HERE",
+  tenantId: "577b1ab0-c97f-4f69-8858-c2efb831d108",
 
   /* 3) Redirect URI. This is filled in automatically from wherever the
         app is hosted, using the blank.html helper page. The SAME url
