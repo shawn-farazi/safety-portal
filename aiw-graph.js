@@ -133,14 +133,18 @@
     return res.json();
   }
 
-  /* ---- resolve the shared destination folder by name ----- */
+  /* ---- resolve the shared destination folder ------------- */
   var _target = null;
+  function encPathStr(p) { return p.split("/").map(encodeURIComponent).join("/"); }
   function resolveTarget(token) {
     if (_target) return Promise.resolve(_target);
-    var name = CFG.targetFolderName;
+    var path = CFG.targetFolderPath;
+    var segs = path.split("/");
+    var leaf = segs[segs.length - 1];
+    var parent = segs.slice(0, -1).join("/");
     var H = { "Authorization": "Bearer " + token };
     // 1) the signed-in user's OWN OneDrive (the folder's owner, e.g. Shawn)
-    return fetch(GRAPH + "/me/drive/root:/" + encodeURIComponent(name), { headers: H })
+    return fetch(GRAPH + "/me/drive/root:/" + encPathStr(path), { headers: H })
       .then(function (res) {
         if (res.ok) {
           return res.json().then(function (it) {
@@ -148,20 +152,23 @@
             return _target;
           });
         }
-        // 2) a folder of that name SHARED with the signed-in user (e.g. MTR)
+        // 2) the destination folder SHARED with the signed-in user (e.g. MTR)
         return fetch(GRAPH + "/me/drive/sharedWithMe", { headers: H })
           .then(function (r) { return r.json(); })
           .then(function (sw) {
-            var m = (sw.value || []).filter(function (i) { return i.remoteItem && i.name === name; })[0];
+            var m = (sw.value || []).filter(function (i) { return i.remoteItem && i.name === leaf; })[0];
             if (m && m.remoteItem) {
               _target = { driveId: m.remoteItem.parentReference.driveId, itemId: m.remoteItem.id };
               return _target;
             }
-            // 3) not found anywhere -> create it in the signed-in user's own drive
-            return fetch(GRAPH + "/me/drive/root/children", {
+            // 3) not found -> create the leaf inside its parent in the user's own drive
+            var childrenUrl = parent
+              ? GRAPH + "/me/drive/root:/" + encPathStr(parent) + ":/children"
+              : GRAPH + "/me/drive/root/children";
+            return fetch(childrenUrl, {
               method: "POST",
               headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
-              body: JSON.stringify({ name: name, folder: {}, "@microsoft.graph.conflictBehavior": "fail" })
+              body: JSON.stringify({ name: leaf, folder: {}, "@microsoft.graph.conflictBehavior": "fail" })
             }).then(handleRes).then(function (it) {
               _target = { driveId: it.parentReference.driveId, itemId: it.id };
               return _target;
@@ -177,8 +184,8 @@
       var auth = { "Authorization": "Bearer " + token };
 
       // MODE 1: shared destination — everything into one fixed folder
-      // (found BY NAME), regardless of who is signed in.
-      if (CFG.targetFolderName) {
+      // (found by path/name), regardless of who is signed in.
+      if (CFG.targetFolderPath) {
         return resolveTarget(token).then(function (t) {
           var base = GRAPH + "/drives/" + t.driveId + "/items/" + t.itemId;
           // create the per-form subfolder if it isn't there yet (ignore 409)

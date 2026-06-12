@@ -35,12 +35,13 @@ window.AIW_CONFIG = {
        - For the folder's owner (Shawn): uses/creates it in their OneDrive.
        - For anyone else (e.g. MTR on the iPad): finds it among the folders
          shared with them, so saves land in the owner's copy.
-     To change the destination, just change targetFolderName.
-     Leave targetFolderName blank ("") to save to each signed-in user's
+     targetFolderPath is the folder's path inside OneDrive (use "/" for
+     nesting). To change the destination, just change targetFolderPath.
+     Leave targetFolderPath blank ("") to save to each signed-in user's
      OWN OneDrive under baseFolder below.
      ---------------------------------------------------------------- */
-  targetFolderName: "08 Safety Records",
-  targetLabel:      "08 Safety Records",
+  targetFolderPath: "09 SAFETY/08 Safety Records",
+  targetLabel:      "09 SAFETY / 08 Safety Records",
 
   /* Used only when targetFolderId is blank (per-user OneDrive mode). */
   baseFolder: "Safety Records",
