@@ -124,12 +124,51 @@
     return chain;
   }
 
+  function handleRes(res) {
+    if (!res.ok) {
+      return res.text().then(function (t) {
+        throw new Error("Upload failed (" + res.status + "). " + t.slice(0, 300));
+      });
+    }
+    return res.json();
+  }
+
   /* ---- upload -------------------------------------------- */
   function uploadPdf(blob, filename, formKey) {
     var folderName = (CFG.folders && CFG.folders[formKey]) || "Safety Records";
-    var segments = [CFG.baseFolder, folderName];
-    var fullPath = segments.join("/") + "/" + filename;
     return getToken(true).then(function (token) {
+      var auth = { "Authorization": "Bearer " + token };
+
+      // MODE 1: shared destination — everything into one fixed folder
+      // (e.g. Shawn's "09 SAFETY"), regardless of who is signed in.
+      if (CFG.targetDriveId && CFG.targetFolderId) {
+        var base = GRAPH + "/drives/" + CFG.targetDriveId + "/items/" + CFG.targetFolderId;
+        // create the per-form subfolder if it isn't there yet (ignore 409)
+        return fetch(base + "/children", {
+          method: "POST",
+          headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: folderName, folder: {},
+            "@microsoft.graph.conflictBehavior": "fail"
+          })
+        }).then(function () {
+          var url = base + ":/" + encPath(folderName + "/" + filename) + ":/content";
+          return fetch(url, {
+            method: "PUT",
+            headers: { "Authorization": "Bearer " + token, "Content-Type": "application/pdf" },
+            body: blob
+          });
+        }).then(handleRes).then(function (item) {
+          return {
+            ok: true, webUrl: item.webUrl, name: item.name,
+            folder: (CFG.targetLabel || "OneDrive") + " / " + folderName
+          };
+        });
+      }
+
+      // MODE 2: per-user — save to the signed-in user's own OneDrive.
+      var segments = [CFG.baseFolder, folderName];
+      var fullPath = segments.join("/") + "/" + filename;
       return ensureFolders(token, segments).then(function () {
         var url = GRAPH + "/me/drive/root:/" + encPath(fullPath) + ":/content";
         return fetch(url, {
@@ -137,14 +176,7 @@
           headers: { "Authorization": "Bearer " + token, "Content-Type": "application/pdf" },
           body: blob
         });
-      }).then(function (res) {
-        if (!res.ok) {
-          return res.text().then(function (t) {
-            throw new Error("Upload failed (" + res.status + "). " + t.slice(0, 300));
-          });
-        }
-        return res.json();
-      }).then(function (item) {
+      }).then(handleRes).then(function (item) {
         return { ok: true, webUrl: item.webUrl, folder: segments.join(" / "), name: item.name };
       });
     });

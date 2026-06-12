@@ -22,14 +22,27 @@ window.AIW_CONFIG = {
         app registration. Leave this as-is unless told otherwise.       */
   redirectUri: (location.origin + location.pathname).replace(/[^/]*$/, "") + "blank.html",
 
-  /* Permissions the app asks for. Files.ReadWrite lets it save PDFs to
-     the signed-in user's OneDrive. User.Read shows who is signed in.    */
-  scopes: ["User.Read", "Files.ReadWrite"],
+  /* Permissions the app asks for.
+     - Files.ReadWrite      : save to the signed-in user's own OneDrive
+     - Files.ReadWrite.All  : save into a folder shared with the signed-in
+                              user (lets the iPad/MTR write into Shawn's folder)
+     - User.Read            : show who is signed in                          */
+  scopes: ["User.Read", "Files.ReadWrite", "Files.ReadWrite.All"],
 
-  /* Top-level OneDrive folder that holds everything. */
+  /* ----------------------------------------------------------------
+     SHARED DESTINATION (everything saves here, no matter who signs in)
+     Points at Shawn's OneDrive > "09 SAFETY" folder.
+     Leave targetFolderId blank ("") to instead save to each signed-in
+     user's OWN OneDrive under baseFolder below.
+     ---------------------------------------------------------------- */
+  targetDriveId:  "b!oHQoAYGaAUi4wdJ-miC_1QXZm5HBZlNLv0v56E4_mmZxTzHDA8UaS7vC3RMWkKrP",
+  targetFolderId: "01QCFSZVSJASRSUDHWZFDIFXAEYHHKU6WD",
+  targetLabel:    "09 SAFETY",
+
+  /* Used only when targetFolderId is blank (per-user OneDrive mode). */
   baseFolder: "Safety Records",
 
-  /* One subfolder per form type (your chosen layout). */
+  /* One subfolder per form type, created inside the destination. */
   folders: {
     meeting:     "Daily Safety Meetings",
     hazard:      "Hazard Assessments",
