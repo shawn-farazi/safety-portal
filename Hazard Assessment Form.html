@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PPE Hazard Assessment</title>
+  <style>
+    :root{--bg:#f6f7f9;--card:#fff;--ink:#17202a;--muted:#5d6d7e;--line:#d9dee7;--brand:#1f5f99;--ok:#0f7b45;--danger:#b42318;}
+    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.35}
+    header{position:sticky;top:0;z-index:10;background:var(--brand);color:white;padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.15)}
+    header h1{font-size:20px;margin:0 0 4px} header p{margin:0;font-size:13px;opacity:.95}
+    main{max-width:1100px;margin:auto;padding:16px 12px 70px}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+    h2{font-size:20px;margin:0 0 12px;border-bottom:1px solid var(--line);padding-bottom:8px} h3{font-size:16px;margin:16px 0 8px;color:#243b53}.help{color:var(--muted);font-size:13px;margin:6px 0 12px}.required{color:var(--danger)}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field label{display:block;font-weight:700;font-size:13px;margin:0 0 4px}.field input,.field textarea,.field select{width:100%;border:1px solid #cfd7e6;border-radius:10px;padding:12px;font-size:16px;background:#fff}.field textarea{min-height:78px;resize:vertical}.options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}.option{display:flex;align-items:center;gap:9px;border:1px solid #e1e7f0;border-radius:10px;padding:10px;background:#fff;min-height:42px}.option input{width:22px;height:22px}.yesno{display:flex;gap:16px;flex-wrap:wrap}.yesno .option{min-width:120px}.section-controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.actions{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:10px;display:flex;gap:8px;justify-content:center;z-index:20}.btn{border:0;border-radius:10px;padding:12px 14px;font-weight:800;font-size:15px;cursor:pointer}.primary{background:var(--brand);color:#fff}.secondary{background:#e8eef6;color:#18344f}.danger{background:#fde8e6;color:var(--danger)}.ok{background:#e6f4ed;color:var(--ok)}
+    .pill{display:inline-block;background:#eef4fb;color:#23425f;border:1px solid #d6e3f2;border-radius:999px;padding:4px 9px;font-size:12px;margin:2px}.sig-box{border:1px dashed #9aa8ba;border-radius:10px;height:90px;background:#fff;margin-top:6px;display:flex;align-items:center;justify-content:center;color:#6b7788}.small{font-size:12px;color:var(--muted)}
+    @media(max-width:760px){.grid,.options{grid-template-columns:1fr}.actions{flex-wrap:wrap}.btn{flex:1 1 45%}}
+    @media print{header,.actions,.section-controls,.no-print{display:none!important}body{background:white}.card{box-shadow:none;border:1px solid #aaa;break-inside:avoid;margin:8px 0}main{padding:0;max-width:none}.options{grid-template-columns:repeat(2,minmax(0,1fr))}.option{padding:4px;border:0}.field input,.field textarea{border:0;border-bottom:1px solid #555;border-radius:0;padding:4px}}
+  
+
+/* Advanced Ironworks shared iPad navigation */
+:root{--ai-blue:#0b5fff;--ai-blue-dark:#0847bd;--ai-text:#111827;--ai-border:#d9dee7;}
+.ai-topnav{position:sticky;top:0;z-index:999;background:linear-gradient(135deg,var(--ai-blue),var(--ai-blue-dark));color:#fff;padding:12px 16px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.ai-topnav-inner{max-width:1100px;margin:0 auto;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.ai-brand{font-weight:900;font-size:18px;letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+.ai-nav-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.ai-nav-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:48px;padding:12px 16px;border-radius:14px;background:#fff;color:#0b2f6b;text-decoration:none;font-weight:900;border:1px solid rgba(255,255,255,.45);box-shadow:0 1px 4px rgba(0,0,0,.16);font-size:16px}
+.ai-nav-btn.secondary{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.35)}
+.ai-topnav + header{top:72px!important}
+.signature-pad{width:100%;height:120px;border:1px dashed #8a96a8;border-radius:12px;background:#fff;touch-action:none;display:block;margin-top:8px}
+.clear-signature{margin-top:8px;min-height:44px;border-radius:12px;border:0;background:#e9eef7;color:#111827;font-weight:800;padding:10px 14px}
+@media(max-width:760px){.ai-topnav-inner{align-items:stretch}.ai-brand{width:100%;justify-content:center}.ai-nav-buttons{width:100%;display:grid;grid-template-columns:1fr 1fr}.ai-nav-btn{width:100%}.ai-topnav + header{top:118px!important}}
+@media print{.ai-topnav,.clear-signature{display:none!important}.ai-topnav + header{top:0!important}.signature-pad{border:0;border-bottom:1px solid #000;border-radius:0}}
+
+  </style>
+</head>
+<body>
+<nav class="ai-topnav no-print" aria-label="App navigation">
+  <div class="ai-topnav-inner">
+    <div class="ai-brand">⚙️ Advanced Ironworks Apps</div>
+    <div class="ai-nav-buttons">
+      <a class="ai-nav-btn" href="index.html">🏠 Home</a>
+      <a class="ai-nav-btn secondary" href="javascript:history.back()">← Back</a>
+    </div>
+  </div>
+</nav>
+
+<header><h1>Advanced Ironworks PPE Hazard Assessment</h1><p>iPad-friendly web form. Fill out, save as PDF, email summary, or reset for a blank assessment.</p></header>
+<main>
+<form id="ppeForm">
+<section class="card"><h2>Assessment Certification</h2><p class="help">Required fields certify that a workplace hazard assessment was completed.</p><div class="grid">
+<div class="field"><label>Work Place Name <span class="required">*</span></label><input name="workplaceName" required value="Advanced Ironworks"></div>
+<div class="field"><label>Assessment Conducted By <span class="required">*</span></label><input name="assessor" required></div>
+<div class="field"><label>Work Place Address <span class="required">*</span></label><input name="address" required value="19020 NE 84th Street, Redmond WA 98053"></div>
+<div class="field"><label>Date of Assessment <span class="required">*</span></label><input name="date" type="date" required></div>
+<div class="field"><label>Work Area(s)</label><input name="workAreas"></div>
+<div class="field"><label>Job / Task(s)</label><input name="jobTasks"></div>
+</div><div class="field" style="margin-top:12px"><label>General Notes / Controls Tried</label><textarea name="generalNotes" placeholder="Engineering, workplace, or administrative controls considered before PPE..."></textarea></div></section>
+<div id="sections"></div>
+<section class="card"><h2>Certification / Signature</h2><div class="grid"><div class="field"><label>Certifier Name</label><input name="certifier"></div><div class="field"><label>Title</label><input name="title"></div></div><div class="field" style="margin-top:12px"><label>Certifier Signature</label><canvas id="certifierSignature" class="signature-pad"></canvas><button class="clear-signature no-print" type="button" onclick="clearSignature()">Clear Signature</button></div><p class="small">Tip: Tap Save PDF and choose iCloud Drive, OneDrive, SharePoint, or another folder from the Share Sheet.</p></section>
+</form>
+</main>
+<div id="aiwPdfStatus" class="small no-print" style="text-align:center;margin:8px;color:#5d6d7e"></div><div class="actions no-print"><button class="btn primary" type="button" id="savePdfBtn">Save PDF</button><button class="btn secondary" type="button" onclick="emailSummary()">Email Summary</button><button class="btn danger" type="button" onclick="resetForm()">Blank New Form</button></div>
+<script>
+const data=[
+{key:'eyes',title:'EYES',activities:['abrasive blasting','sanding','chopping','sawing','cutting','grinding','drilling','hammering','welding','punch press operations','other'],exposures:['airborne dust','flying particles','blood splashes','hazardous liquid chemicals','intense light','other'],ppe:['Safety glasses','Side shields','Safety goggles','Dust-tight goggles','Shading/Filter goggles','Welding shield','Other']},
+{key:'face',title:'FACE',activities:['cleaning','foundry work','cooking','welding','siphoning','mixing','painting','pouring molten metal','dip tank operations','other'],exposures:['hazardous liquid chemicals','extreme heat/cold','potential irritants','other'],ppe:['Face shield','Shading/Filter','Welding shield','Other']},
+{key:'head',title:'HEAD',activities:['building maintenance','confined space operations','construction','electrical wiring','walking/working under catwalks','walking/working under conveyor belts','walking/working under crane loads','utility work','other'],exposures:['beams','pipes','exposed electrical wiring or components','falling objects','machine parts','other'],ppe:['Protective Helmet','Type A (low voltage)','Type B (high voltage)','Type C','Bump cap (not ANSI-approved)','Hair net or soft cap','Other']},
+{key:'hands',title:'HANDS / ARMS',activities:['baking','material handling','cooking','sanding','grinding','sawing','welding','hammering','working with glass','using computers','using knives','dental and health care services','other'],exposures:['blood','irritating chemicals','tools or materials that could scrape, bruise, or cut','extreme heat/cold','other'],ppe:['Gloves','Chemical resistance','Liquid/leak resistance','Temperature resistance','Abrasion/cut resistance','Slip resistance','Protective sleeves','Other']},
+{key:'feet',title:'FEET / LEGS',activities:['building maintenance','construction','demolition','food processing','foundry work','logging','plumbing','trenching','use of highly flammable materials','welding','other'],exposures:['explosive atmospheres','explosives','exposed electrical wiring or components','heavy equipment','slippery surfaces','tools','other'],ppe:['Safety shoes or boots','Toe protection','Metatarsal protection','Electrical protection','Heat/cold protection','Puncture resistance','Chemical resistance','Anti-slip soles','Leggings or chaps','Foot-Leg guards','Other']},
+{key:'body',title:'BODY / SKIN',activities:['baking or frying','battery charging','dip tank operations','fiberglass installation','irritating chemicals','sawing','other'],exposures:['chemical splashes','extreme heat/cold','sharp or rough edges','other'],ppe:['Vest, Jacket','Coveralls, Body suit','Raingear','Apron','Welding leathers','Abrasion/cut resistance','Other']},
+{key:'whole',title:'BODY / WHOLE',activities:['building maintenance','construction','logging','utility work','other'],exposures:['working from heights of 10 feet or more','working near water','other'],ppe:['Fall Arrest/Restraint','PFD','Other']},
+{key:'lungs',title:'LUNGS / RESPIRATORY',activities:['cleaning','pouring','mixing','sawing','painting','fiberglass installation','compressed air or gas operations','other'],exposures:['irritating dust or particulate','irritating or toxic gas/vapor','other'],ppe:['Respirator','Dust mask / filtering facepiece','Cartridge respirator','Supplied air respirator','Other']},
+{key:'ears',title:'EARS / HEARING',activities:['generator','grinding','ventilation fans','machining','motors','routers','sanding','sawing','pneumatic equipment','punch or brake presses','use of conveyors','other'],exposures:['loud noises','loud work environment','noisy machines/tools','punch or brake presses','other'],ppe:['Ear plugs','Ear muffs','Canal caps','Other']}
+];
+function safe(s){return s.replace(/[^a-z0-9]+/gi,'_').toLowerCase()}
+function checkboxList(prefix,items){return `<div class="options">${items.map(item=>{let name=`${prefix}_${safe(item)}`;let extra=item.toLowerCase()==='other'||item.includes('Filter')||item.includes('Fall Arrest')||item==='PFD'?`<input style="margin-left:auto;max-width:190px" name="${name}_detail" placeholder="detail/type">`:'';return `<label class="option"><input type="checkbox" name="${name}" value="${item}"><span>${item}</span>${extra}</label>`}).join('')}</div>`}
+function render(){document.getElementById('sections').innerHTML=data.map(sec=>`<section class="card" id="${sec.key}"><h2>${sec.title}</h2><h3>Work activities</h3>${checkboxList(sec.key+'_activity',sec.activities)}<h3>Work-related exposure</h3>${checkboxList(sec.key+'_exposure',sec.exposures)}<h3>Can hazard be eliminated without the use of PPE?</h3><div class="yesno"><label class="option"><input type="radio" name="${sec.key}_eliminated" value="Yes">Yes</label><label class="option"><input type="radio" name="${sec.key}_eliminated" value="No">No</label></div><h3>If no, required PPE</h3>${checkboxList(sec.key+'_ppe',sec.ppe)}<div class="field" style="margin-top:12px"><label>Notes / controls for ${sec.title}</label><textarea name="${sec.key}_notes"></textarea></div><div class="section-controls no-print"><button class="btn secondary" type="button" onclick="clearSection('${sec.key}')">Clear ${sec.title}</button></div></section>`).join('')}
+function collect(){const fd=new FormData(document.getElementById('ppeForm'));let obj={};for(const [k,v] of fd.entries()){if(obj[k]){if(!Array.isArray(obj[k]))obj[k]=[obj[k]];obj[k].push(v)}else obj[k]=v}return obj}
+function emailSummary(){const o=collect();const subject=encodeURIComponent(`PPE Assessment - ${o.workAreas||''} - ${o.date||''}`);const body=encodeURIComponent(JSON.stringify(o,null,2));location.href=`mailto:?subject=${subject}&body=${body}`;}
+function resetForm(){if(confirm('Clear this assessment and start with a blank form?')){document.getElementById('ppeForm').reset();setToday();}}
+function clearSection(key){document.querySelectorAll(`#${key} input,#${key} textarea`).forEach(el=>{if(el.type==='checkbox'||el.type==='radio')el.checked=false;else el.value='';});}
+function setToday(){const d=document.querySelector('input[name=date]');if(d&&!d.value)d.value=new Date().toISOString().slice(0,10)}
+
+function setupSignature(){const c=document.getElementById('certifierSignature');if(!c)return;const ctx=c.getContext('2d');function resize(){const r=c.getBoundingClientRect();const old=c.width?c.toDataURL('image/png'):null;c.width=Math.max(1,Math.round(r.width*devicePixelRatio));c.height=Math.max(1,Math.round(r.height*devicePixelRatio));ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);ctx.lineWidth=2;ctx.lineCap='round';ctx.strokeStyle='#111';if(old){const img=new Image();img.onload=()=>ctx.drawImage(img,0,0,c.width/devicePixelRatio,c.height/devicePixelRatio);img.src=old;}}resize();window.addEventListener('resize',resize);let drawing=false,last=null;function pos(e){const r=c.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top}}function start(e){e.preventDefault();drawing=true;last=pos(e)}function move(e){if(!drawing)return;e.preventDefault();const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p}function end(){drawing=false;last=null}c.addEventListener('touchstart',start,{passive:false});c.addEventListener('touchmove',move,{passive:false});c.addEventListener('touchend',end);c.addEventListener('mousedown',start);c.addEventListener('mousemove',move);window.addEventListener('mouseup',end)}
+function clearSignature(){const c=document.getElementById('certifierSignature');if(c)c.getContext('2d').clearRect(0,0,c.width,c.height)}
+render();setToday();setupSignature();
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<script src="aiw-config.js"></script>
+<script src="aiw-graph.js"></script>
+<script src="aiw-save.js"></script>
+<script>
+async function aiwMakePdfBlob(selector, filenameBase){
+  if(!window.jspdf || !window.html2canvas){throw new Error('PDF tools did not load.');}
+  const {jsPDF}=window.jspdf;
+  const pdf=new jsPDF('p','pt','letter');
+  const pageW=612,pageH=792,margin=22;
+  const nodes=[...document.querySelectorAll(selector)].filter(el=>el.offsetParent!==null || el.matches('form,.wrap,main,.sheet,.hero,.card,header'));
+  if(!nodes.length){throw new Error('Nothing found to save.');}
+  document.body.classList.add('making-pdf');
+  for(let i=0;i<nodes.length;i++){
+    const canvas=await html2canvas(nodes[i],{scale:2,backgroundColor:'#ffffff',useCORS:true,scrollY:0});
+    const img=canvas.toDataURL('image/jpeg',0.95);
+    const ratio=Math.min((pageW-margin*2)/canvas.width,(pageH-margin*2)/canvas.height);
+    const w=canvas.width*ratio,h=canvas.height*ratio;
+    if(i>0)pdf.addPage();
+    pdf.addImage(img,'JPEG',margin,margin,w,h);
+  }
+  document.body.classList.remove('making-pdf');
+  return pdf.output('blob');
+}
+async function aiwSavePdf(selector, filename, shareText, formKey){
+  const status=document.getElementById('aiwPdfStatus');
+  if(status)status.textContent='Creating PDF...';
+  try{
+    const blob=await aiwMakePdfBlob(selector, filename);
+    await aiwDeliverPdf({blob:blob,filename:filename,formKey:formKey,shareText:shareText,statusEl:status});
+  }catch(e){
+    document.body.classList.remove('making-pdf');
+    console.error(e);
+    if(status)status.textContent='PDF could not be created here. Open in Safari if this app blocks file sharing.';
+  }
+}
+function aiwDate(){return new Date().toISOString().slice(0,10)}
+</script>
+
+<script>
+document.getElementById('savePdfBtn').addEventListener('click',function(){
+  const area=(document.querySelector('[name=workAreas]')&&document.querySelector('[name=workAreas]').value||'Hazard_Assessment').replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,'') || 'Hazard_Assessment';
+  aiwSavePdf('header, main .card','Hazard_Assessment_'+area+'_'+aiwDate()+'.pdf','Hazard Assessment Form','hazard');
+});
+</script>
+</body>
+</html>

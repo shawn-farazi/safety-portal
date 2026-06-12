@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="AIW Apps" />
+<title>Advanced Ironworks App Launcher</title>
+<style>
+:root{--blue:#0b5fff;--blue2:#0847bd;--bg:#f5f6f8;--card:#fff;--text:#111827;--muted:#5d6d7e;--border:#d9dee7;--green:#0f7b45;--orange:#b45309;--red:#b42318;}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.hero{background:linear-gradient(135deg,var(--blue),var(--blue2));color:#fff;padding:34px 22px 28px;text-align:center;box-shadow:0 2px 14px rgba(0,0,0,.18)}
+.hero h1{margin:0;font-size:34px;letter-spacing:.02em}.hero p{margin:8px 0 0;font-size:18px;opacity:.95}
+.main{max-width:1050px;margin:0 auto;padding:26px 18px 50px}.launcher{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:10px}
+.tile{display:flex;align-items:center;gap:18px;min-height:170px;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:24px;text-decoration:none;color:var(--text);box-shadow:0 4px 14px rgba(0,0,0,.08);transition:transform .12s ease,box-shadow .12s ease;border-left:10px solid var(--blue)}
+.tile:active{transform:scale(.98)}.tile:hover{box-shadow:0 8px 22px rgba(0,0,0,.12)}
+.icon{width:78px;height:78px;border-radius:22px;display:flex;align-items:center;justify-content:center;font-size:42px;background:#eef4ff;color:var(--blue);flex:0 0 auto}
+.tile.green{border-left-color:var(--green)}.tile.green .icon{background:#e6f4ed;color:var(--green)}
+.tile.orange{border-left-color:var(--orange)}.tile.orange .icon{background:#fff7ed;color:var(--orange)}
+.tile.red{border-left-color:var(--red)}.tile.red .icon{background:#fde8e6;color:var(--red)}
+.tile h2{margin:0 0 8px;font-size:28px}.tile p{margin:0;color:var(--muted);font-size:17px;line-height:1.35}.footer-note{margin-top:22px;color:var(--muted);font-size:15px;text-align:center}
+/* Connection bar */
+.connbar{max-width:1050px;margin:18px auto 0;padding:0 18px}
+.conncard{background:#fff;border:1px solid var(--border);border-radius:18px;padding:14px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+.dot{width:14px;height:14px;border-radius:50%;background:#c2c9d6;flex:0 0 auto}
+.dot.on{background:var(--green)}.dot.warn{background:var(--orange)}
+.conntext{flex:1;min-width:200px}.conntext b{font-size:17px}.conntext span{display:block;color:var(--muted);font-size:14px;margin-top:2px}
+.connbtn{border:none;border-radius:12px;padding:12px 18px;font-weight:800;font-size:16px;min-height:48px;cursor:pointer;background:var(--blue);color:#fff}
+.connbtn.ghost{background:#e9eef7;color:#0b2f6b}
+@media(max-width:760px){.hero h1{font-size:28px}.launcher{grid-template-columns:1fr}.tile{min-height:145px;padding:20px}.tile h2{font-size:24px}.icon{width:68px;height:68px;font-size:36px}}
+@media print{.hero{box-shadow:none}.main{padding:12px}.tile{box-shadow:none}.connbar{display:none}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <h1>Advanced Ironworks</h1>
+  <p>iPad Safety App Launcher</p>
+</header>
+
+<div class="connbar">
+  <div class="conncard">
+    <div class="dot" id="connDot"></div>
+    <div class="conntext">
+      <b id="connTitle">Checking OneDrive connection…</b>
+      <span id="connSub">Sign in once here and every form will save to OneDrive automatically.</span>
+    </div>
+    <button class="connbtn" id="connBtn" style="display:none">Sign in</button>
+    <button class="connbtn ghost" id="signOutBtn" style="display:none">Sign out</button>
+  </div>
+</div>
+
+<main class="main">
+  <section class="launcher" aria-label="Available applications">
+    <a class="tile green" href="Daily Safety Meeting.html">
+      <div class="icon">📋</div>
+      <div><h2>Daily Safety Meeting</h2><p>Run safety topics, collect employee sign-ins, save the PDF straight to OneDrive.</p></div>
+    </a>
+    <a class="tile orange" href="Hazard Assessment Form.html">
+      <div class="icon">⚠️</div>
+      <div><h2>Hazard Assessment Form</h2><p>Complete quarterly PPE hazard assessments, add signatures, save to OneDrive.</p></div>
+    </a>
+    <a class="tile red" href="Accident.html">
+      <div class="icon">📝</div>
+      <div><h2>Accident Investigation</h2><p>Document incidents, investigation details, corrective actions, and signatures.</p></div>
+    </a>
+    <a class="tile" href="New Employee Orientation.html">
+      <div class="icon">👷</div>
+      <div><h2>New Employee Orientation</h2><p>Complete the new-hire safety orientation checklist, signatures, save to OneDrive.</p></div>
+    </a>
+  </section>
+  <p class="footer-note">Keep all files together in this folder. Open <strong>index.html</strong> first, sign in once, then any form saves with one tap.</p>
+</main>
+
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<script src="aiw-config.js"></script>
+<script src="aiw-graph.js"></script>
+<script>
+(function(){
+  var dot=document.getElementById('connDot');
+  var title=document.getElementById('connTitle');
+  var sub=document.getElementById('connSub');
+  var signInBtn=document.getElementById('connBtn');
+  var signOutBtn=document.getElementById('signOutBtn');
+
+  function render(){
+    if(!window.AIWGraph || !AIWGraph.isConfigured()){
+      dot.className='dot warn';
+      title.textContent='Not connected to OneDrive yet';
+      sub.textContent='Setup is not finished. Forms will fall back to the Share Sheet until the OneDrive connection is configured.';
+      signInBtn.style.display='none'; signOutBtn.style.display='none';
+      return;
+    }
+    var acct=AIWGraph.getAccount();
+    if(acct){
+      dot.className='dot on';
+      title.textContent='Connected to OneDrive';
+      sub.textContent='Signed in as '+(acct.username||acct.name)+'. Forms save automatically — no folder picking.';
+      signInBtn.style.display='none'; signOutBtn.style.display='inline-block';
+    }else{
+      dot.className='dot';
+      title.textContent='Tap Sign in to connect OneDrive';
+      sub.textContent='Sign in once with your Advanced Ironworks account. You stay signed in on this iPad.';
+      signInBtn.style.display='inline-block'; signOutBtn.style.display='none';
+    }
+  }
+
+  signInBtn.onclick=function(){
+    title.textContent='Opening Microsoft sign-in…';
+    AIWGraph.signIn().then(render).catch(function(e){
+      title.textContent='Sign-in did not complete'; sub.textContent=(e&&e.message)||'Please try again.'; render();
+    });
+  };
+  signOutBtn.onclick=function(){ AIWGraph.signOut().then(render); };
+
+  if(window.AIWGraph){ AIWGraph.onStatus(render); if(AIWGraph.isReady()){ AIWGraph.init().then(render).catch(render);} else { render(); } }
+  else { render(); }
+  setTimeout(render, 600);
+})();
+</script>
+</body>
+</html>

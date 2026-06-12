@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Safety Meeting" />
+<title>iPad Safety Meeting App</title>
+<style>
+  :root{--border:#222;--muted:#555;--bg:#f5f6f8;--card:#fff;--accent:#0b5fff;--danger:#b42318}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:#111}
+  .app{max-width:980px;margin:0 auto;padding:18px 18px 80px}
+  .toolbar{position:sticky;top:0;z-index:10;background:rgba(245,246,248,.96);backdrop-filter:blur(8px);padding:12px 0;border-bottom:1px solid #ddd}
+  .toolbar-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  button,select,input{font:inherit;border-radius:12px;border:1px solid #bbb;padding:13px 14px;background:#fff}
+  button{border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer;min-height:48px}
+  button.secondary{background:#3d4852}
+  button.danger{background:var(--danger)}
+  button.light{background:#e9eef7;color:#111;border:1px solid #c8d2e2}
+  select{flex:1;min-width:260px;min-height:48px}
+  .status{font-size:14px;color:#333;margin-top:8px;min-height:20px}
+  .sheet{background:var(--card);padding:30px;margin-top:16px;border:1px solid #ddd;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.06)}
+  .header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+  .title{text-align:center;flex:1}
+  h1{font-size:30px;margin:0 0 4px;text-transform:uppercase;letter-spacing:.04em}
+  .date{font-size:16px;font-weight:700;white-space:nowrap;border:1px solid var(--border);padding:8px 12px;border-radius:8px}
+  .topic-title{font-size:24px;text-align:center;margin:18px 0 10px;font-weight:800}
+  h2{font-size:20px;margin:18px 0 8px;border-bottom:2px solid #111;padding-bottom:4px}
+  ul{margin-top:8px}.summary{font-size:17px;line-height:1.4}.points li{margin:6px 0;font-size:17px}.reminder{font-weight:700;margin-top:12px}
+  .signins{width:100%;border-collapse:collapse;margin-top:10px}
+  .signins th{background:#f0f2f5;text-align:left;font-size:16px;border:1px solid #888;padding:8px}
+  .signins td{border:1px solid #888;padding:8px;vertical-align:middle}
+  .name-input{width:100%;font-size:18px;min-height:48px;border:1px solid #aaa;border-radius:8px}
+  .sig-wrap{display:flex;gap:8px;align-items:center}
+  canvas.sig{width:100%;height:72px;border:1px solid #aaa;border-radius:8px;background:#fff;touch-action:none}
+  .clear-row{min-width:72px;padding:10px;background:#e6e8eb;color:#111;border:1px solid #bbb}
+  .row-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .small-note{color:var(--muted);font-size:14px;margin-top:12px;line-height:1.35}
+.records div{padding:6px 0;border-top:1px solid #eee;font-size:14px}
+  @media print{
+    body{background:#fff}.app{padding:0;max-width:none}.toolbar,.no-print,.clear-row,.row-actions{display:none!important}
+    .sheet{border:none;box-shadow:none;margin:0;padding:18px;border-radius:0}.date{border:none;padding:0}.signins th,.signins td{border:1px solid #000}
+    input{border:none}.sig-wrap{display:block}canvas.sig{border:none;height:58px}.name-input{padding:0}
+  }
+
+  /* Advanced Ironworks shared iPad navigation */
+  :root{--ai-blue:#0b5fff;--ai-blue-dark:#0847bd;--ai-bg:#f5f6f8;--ai-card:#ffffff;--ai-text:#111827;--ai-muted:#5d6d7e;--ai-border:#d9dee7;}
+  .ai-topnav{position:sticky;top:0;z-index:999;background:linear-gradient(135deg,var(--ai-blue),var(--ai-blue-dark));color:#fff;padding:12px 16px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+  .ai-topnav-inner{max-width:1100px;margin:0 auto;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+  .ai-brand{font-weight:900;font-size:18px;letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+  .ai-nav-buttons{display:flex;gap:8px;flex-wrap:wrap}
+  .ai-nav-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:48px;padding:12px 16px;border-radius:14px;background:#fff;color:#0b2f6b;text-decoration:none;font-weight:900;border:1px solid rgba(255,255,255,.45);box-shadow:0 1px 4px rgba(0,0,0,.16);font-size:16px}
+  .ai-nav-btn.secondary{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.35)}
+  @media(max-width:760px){.ai-topnav-inner{align-items:stretch}.ai-brand{width:100%;justify-content:center}.ai-nav-buttons{width:100%;display:grid;grid-template-columns:1fr 1fr}.ai-nav-btn{width:100%}}
+
+  .ai-topnav + header{top:72px!important}
+  .ai-topnav + .app .toolbar{top:72px!important}
+  @media(max-width:760px){.ai-topnav + header{top:118px!important}.ai-topnav + .app .toolbar{top:118px!important}}
+  @media print{.ai-topnav + header,.ai-topnav + .app .toolbar{top:0!important}}
+
+  @media print{.ai-topnav{display:none!important}}
+
+
+
+/* Advanced Ironworks uniform iPad navigation + signature pads */
+:root{--ai-blue:#0b5fff;--ai-blue-dark:#0847bd;--ai-bg:#f5f6f8;--ai-card:#ffffff;--ai-text:#111827;--ai-muted:#5d6d7e;--ai-border:#d9dee7;--ai-danger:#b42318;--ai-ok:#0f7b45;}
+.ai-topnav{position:sticky;top:0;z-index:999;background:linear-gradient(135deg,var(--ai-blue),var(--ai-blue-dark));color:#fff;padding:12px 16px;box-shadow:0 2px 12px rgba(0,0,0,.18)}
+.ai-topnav-inner{max-width:1100px;margin:0 auto;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.ai-brand{font-weight:900;font-size:18px;letter-spacing:.02em;display:flex;align-items:center;gap:8px}
+.ai-nav-buttons{display:flex;gap:8px;flex-wrap:wrap}
+.ai-nav-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:48px;padding:12px 16px;border-radius:14px;background:#fff;color:#0b2f6b!important;text-decoration:none;font-weight:900;border:1px solid rgba(255,255,255,.45);box-shadow:0 1px 4px rgba(0,0,0,.16);font-size:16px}
+.ai-nav-btn.secondary{background:rgba(255,255,255,.15);color:#fff!important;border-color:rgba(255,255,255,.35)}
+.ai-signature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.ai-sig-card{background:#fff;border:1px solid var(--ai-border);border-radius:14px;padding:14px;margin-top:10px}.ai-sig-card label{font-weight:800;display:block;margin-bottom:8px}.ai-signature,.ai-signature-pad{width:100%;height:120px;border:1px dashed #8a96a8;border-radius:12px;background:#fff;touch-action:none;display:block}.ai-clear-sig{margin-top:8px;min-height:44px;border-radius:12px;border:0;background:#e9eef7;color:#111827;font-weight:800;padding:10px 14px}.ai-autosave-status{font-size:13px;color:var(--ai-muted);margin-top:8px}.ai-home-spacer{height:0}
+@media(max-width:760px){.ai-topnav-inner{align-items:stretch}.ai-brand{width:100%;justify-content:center}.ai-nav-buttons{width:100%;display:grid;grid-template-columns:1fr 1fr}.ai-nav-btn{width:100%}.ai-signature-grid{grid-template-columns:1fr}}
+@media print{.ai-topnav,.ai-clear-sig,.ai-autosave-status{display:none!important}.ai-signature,.ai-signature-pad{border:0;border-bottom:1px solid #000;border-radius:0}}
+</style>
+</head>
+<body>
+
+<nav class="ai-topnav no-print" aria-label="App navigation">
+  <div class="ai-topnav-inner">
+    <div class="ai-brand">⚙️ Advanced Ironworks Apps</div>
+    <div class="ai-nav-buttons">
+      <a class="ai-nav-btn" href="index.html">🏠 Home</a>
+      <a class="ai-nav-btn secondary" href="javascript:history.back()">← Back</a>
+    </div>
+  </div>
+</nav>
+
+
+
+<div class="app">
+  <div class="toolbar no-print">
+    <div class="toolbar-row">
+      <select id="topicSelect" aria-label="Safety topic"></select>
+      <button id="shareOneDriveBtn">Save PDF</button>
+      <button id="newBtn" class="light">New Meeting</button>
+    </div>
+    <div class="status" id="status">Tip: Tap “Save PDF” and choose iCloud Drive, OneDrive, SharePoint, or another folder from the Share Sheet. After saving, the next safety topic loads automatically.</div>
+  </div>
+
+  <section class="sheet" id="sheet">
+    <div class="header">
+      <div style="width:120px"></div>
+      <div class="title"><h1>Daily Safety Meeting</h1></div>
+      <div class="date">Date: <span id="dateText"></span></div>
+    </div>
+    <div class="topic-title" id="topicTitle"></div>
+    <h2>Summary</h2>
+    <div class="summary" id="summary"></div>
+    <h2>Key Safety Points</h2>
+    <ul class="points" id="points"></ul>
+    <div class="reminder" id="reminder">Safety Reminder: Follow site-specific procedures and wear required PPE at all times.</div>
+    <h2>Employee Sign-In</h2>
+    <table class="signins" id="signTable">
+      <thead><tr><th style="width:38%">Print Name</th><th>Signature</th></tr></thead>
+      <tbody id="signRows"></tbody>
+    </table>
+    <div class="row-actions no-print">
+      <button id="addRowBtn" class="light">+ Add Employee</button>
+      <button id="removeRowBtn" class="danger">Remove Last Row</button>
+    </div>
+    <div class="small-note no-print">PDF saving on iPad uses the native Share Sheet. Choose iCloud Drive, OneDrive, SharePoint, or another folder.</div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://alcdn.msauth.net/browser/2.38.3/js/msal-browser.min.js"></script>
+<script src="aiw-config.js"></script>
+<script src="aiw-graph.js"></script>
+<script src="aiw-save.js"></script>
+<script>
+const topics=[
+{t:'01 - Hearing Protection',s:'Protect your hearing by controlling exposure to hazardous workplace noise and using hearing protection correctly.',p:['Noise above 85 dB can damage hearing.','Watch for ringing ears or difficulty hearing.','Wear hearing protection correctly at all times.','Use engineering controls whenever possible.','Protect hearing both on and off the job.']},
+{t:'02 - Protecting Hands',s:'Hand injuries can be prevented through proper glove selection and safe work practices.',p:['Select gloves based on the hazard.','Inspect gloves before use.','Avoid repetitive strain when possible.','Keep machine guards in place.','Stay focused when using tools.']},
+{t:'03 - Ergonomics',s:'Good ergonomics reduces strain, fatigue, and musculoskeletal injuries.',p:['Store materials at waist height.','Push rather than pull loads.','Keep work close to your body.','Use carts and mechanical aids.','Rotate tasks to reduce repetition.']},
+{t:'04 - Dressing for Winter',s:'Proper winter clothing helps prevent cold stress injuries.',p:['Dress in layers.','Protect your head, hands, and feet.','Avoid sweating by adjusting layers.','Recognize frostbite symptoms.','Know the signs of hypothermia.']},
+{t:'05 - Proper Lifting Techniques',s:'Proper lifting techniques help prevent back injuries.',p:['Check the load before lifting.','Bend your knees and keep your back straight.','Avoid twisting while lifting.','Keep loads close to your body.','Use lifting aids when available.']},
+{t:'06 - Housekeeping',s:'Good housekeeping prevents slips, trips, falls, fires, and other workplace injuries.',p:['Keep work areas clean and organized.','Remove waste and debris regularly.','Keep exits, aisles, and walkways clear.','Store tools and materials properly.','Clean spills immediately and report hazards.']},
+{t:'07 - Forklift Safety',s:'Safe forklift operation requires training, inspections, and attention to surroundings.',p:['Only trained operators may use forklifts.','Perform pre-shift inspections before use.','Keep loads stable and within rated capacity.','Travel at safe speeds with loads low.','Never allow riders or anyone under raised loads.']},
+{t:'08 - Hazard Communication',s:'Employees have the right to know about workplace chemical hazards and protective measures.',p:['Read labels and safety data sheets before use.','Understand chemical hazards and exposure symptoms.','Use required PPE and safe work practices.','Know emergency procedures and spill response.','Report missing labels or hazard information.']},
+{t:'09 - Grinder Safety',s:'Proper grinder use helps prevent cuts, burns, eye injuries, and equipment damage.',p:['Inspect grinders and wheels before use.','Wear required eye, face, hearing, and hand protection.','Keep guards and tool rests in place.','Use the correct wheel for the application.','Disconnect power before maintenance or wheel changes.']},
+{t:'10 - Eye and Face Protection',s:'Eye and face protection helps prevent injuries from flying particles, chemicals, and other hazards.',p:['Wear approved eye protection for the task.','Inspect PPE before each use.','Use face shields when additional protection is needed.','Follow manufacturer and SDS recommendations.','Know the location of emergency eyewash stations.']},
+{t:'11 - Floor and Wall Openings',s:'Unprotected openings can cause serious fall injuries and must be guarded at all times.',p:['Guard all floor and wall openings.','Use covers that are secured and clearly marked.','Protect skylights that cannot support worker loads.','Report unprotected openings immediately.','Use extra caution when working near openings.']},
+{t:'12 - Aerial Lift Safety',s:'Safe aerial lift operation requires training, inspections, and fall protection.',p:['Only trained and authorized operators may use lifts.','Perform pre-shift inspections before use.','Inspect the work area for hazards.','Wear required fall protection.','Never exceed platform load limits.']},
+{t:'13 - Universal Communication Method',s:'Using one communication platform improves coordination and reduces missed messages.',p:['Use Microsoft Teams for official company communication.','Keep notifications enabled.','Use the proper channels for updates and attendance.','Avoid relying on group text messages.','Check Teams during emergencies and outages.']},
+{t:'14 - Drugs and Alcohol Awareness',s:'Substance abuse can affect safety, productivity, and workplace health.',p:['Report to work fit for duty.','Recognize signs of substance abuse.','Seek assistance when needed.','Report unsafe behavior to supervision.','Support a safe and drug-free workplace.']},
+{t:'15 - Headphones in the Workplace',s:'Headphones can reduce awareness of hazards and increase the risk of injury.',p:['Stay alert to alarms and warnings.','Do not wear headphones in production areas.','Avoid distractions while working.','Use only approved communication devices.','Maintain awareness of your surroundings at all times.']},
+{t:'16 - Spill Response (Working Next to a Creek)',s:'Quick response to spills helps protect employees, the environment, and nearby waterways.',p:['Know the location of spill kits and response supplies.','Keep spills away from drains, soil, and waterways.','Protect people first and use appropriate PPE.','Contain and clean spills safely.','Report all spills to your supervisor immediately.']},
+{t:'17 - Respirators',s:'Respirators protect workers from harmful fumes, vapors, dust, and airborne contaminants.',p:['Use respirators when required for welding, painting, or cutting operations.','Select the correct respirator and cartridge for the hazard.','Inspect respirators before each use.','Ensure a proper fit and seal.','Replace cartridges when breathing becomes difficult or contaminants are detected.']}
+];
+const qs=id=>document.getElementById(id);
+const today=new Date();
+const yyyy=today.getFullYear(), mm=String(today.getMonth()+1).padStart(2,'0'), dd=String(today.getDate()).padStart(2,'0');
+qs('dateText').textContent=`${mm}/${dd}/${yyyy}`;
+for(const [i,x] of topics.entries()){const o=document.createElement('option');o.value=i;o.textContent=x.t;qs('topicSelect').appendChild(o)}
+function renderTopic(){const x=topics[qs('topicSelect').value];qs('topicTitle').textContent=x.t;qs('summary').textContent=x.s;qs('points').innerHTML=x.p.map(v=>`<li>${v}</li>`).join('');saveDraft()}
+qs('topicSelect').addEventListener('change',renderTopic);
+function setupCanvas(c){const ctx=c.getContext('2d');function resize(){const r=c.getBoundingClientRect();const img=ctx.getImageData(0,0,c.width||1,c.height||1);c.width=Math.round(r.width*devicePixelRatio);c.height=Math.round(r.height*devicePixelRatio);ctx.scale(devicePixelRatio,devicePixelRatio);ctx.lineWidth=2;ctx.lineCap='round';ctx.strokeStyle='#111'}resize();let drawing=false,last=null;function pos(e){const r=c.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top}}function start(e){e.preventDefault();drawing=true;last=pos(e)}function move(e){if(!drawing)return;e.preventDefault();const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;saveDraft()}function end(){drawing=false;last=null;saveDraft()}c.addEventListener('touchstart',start,{passive:false});c.addEventListener('touchmove',move,{passive:false});c.addEventListener('touchend',end);c.addEventListener('mousedown',start);c.addEventListener('mousemove',move);window.addEventListener('mouseup',end);c.clearSig=()=>{ctx.clearRect(0,0,c.width,c.height);saveDraft()}}
+function addRow(name=''){const tr=document.createElement('tr');tr.innerHTML=`<td><input class="name-input" value="${name.replace(/"/g,'&quot;')}" placeholder="Print name"></td><td><div class="sig-wrap"><canvas class="sig"></canvas><button class="clear-row no-print" type="button">Clear</button></div></td>`;qs('signRows').appendChild(tr);const c=tr.querySelector('canvas');setupCanvas(c);tr.querySelector('.clear-row').onclick=()=>c.clearSig();tr.querySelector('input').addEventListener('input',saveDraft)}
+for(let i=0;i<10;i++)addRow();
+qs('addRowBtn').onclick=()=>addRow();
+qs('removeRowBtn').onclick=()=>{if(qs('signRows').children.length>1){qs('signRows').lastElementChild.remove();saveDraft()}};
+function filename(){const topic=topics[qs('topicSelect').value].t.replace(/^\d+\s-\s/,'').replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,'');return `Safety_Meeting_${topic}_${yyyy}-${mm}-${dd}.pdf`}
+function clearSignInRows(){qs('signRows').innerHTML='';for(let i=0;i<10;i++)addRow();}
+function advanceToNextTopic(){const sel=qs('topicSelect');const current=Number(sel.value)||0;const next=(current+1)%topics.length;sel.value=String(next);clearSignInRows();renderTopic();localStorage.setItem('lastSafetyTopicIndex',String(next));return topics[next].t;}
+async function makePdfBlob(){if(!window.jspdf||!window.html2canvas){throw new Error('PDF tools did not load. Use Print / Save PDF instead.')}document.body.classList.add('making-pdf');const el=qs('sheet');const canvas=await html2canvas(el,{scale:2,backgroundColor:'#ffffff',useCORS:true});document.body.classList.remove('making-pdf');const img=canvas.toDataURL('image/jpeg',0.95);const {jsPDF}=window.jspdf;const pdf=new jsPDF('p','pt','letter');const pageW=612,pageH=792,margin=24;const ratio=Math.min((pageW-margin*2)/canvas.width,(pageH-margin*2)/canvas.height);const w=canvas.width*ratio,h=canvas.height*ratio;pdf.addImage(img,'JPEG',margin,margin,w,h);return pdf.output('blob')}
+async function savePdf(){const status=qs('status');status.textContent='Creating PDF...';try{const blob=await makePdfBlob();await aiwDeliverPdf({blob:blob,filename:filename(),formKey:'meeting',shareText:'Completed safety meeting sign-in sheet',statusEl:status,onUploaded:function(ok){const nextTopic=advanceToNextTopic();status.textContent=status.textContent+' Next topic loaded: '+nextTopic+'.';}});}catch(e){document.body.classList.remove('making-pdf');status.textContent='Could not create the PDF.';console.error(e)}}
+function saveDraft(){}
+function loadDraft(){}
+qs('shareOneDriveBtn').onclick=savePdf;qs('newBtn').onclick=()=>{location.reload()};
+if('serviceWorker' in navigator){const sw='self.addEventListener("install",e=>self.skipWaiting());self.addEventListener("fetch",e=>{});';navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'}))).catch(()=>{})}
+renderTopic();loadDraft();
+</script>
+
+</body>
+</html>
