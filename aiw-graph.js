@@ -80,18 +80,26 @@
   function getToken(interactive) {
     return ensureMsal().then(function (app) {
       var acct = getAccount();
-      var req = { scopes: CFG.scopes, account: acct || undefined };
+      function popup() {
+        return app.acquireTokenPopup({ scopes: CFG.scopes })
+          .then(function (r) { app.setActiveAccount(r.account); notify(); return r.accessToken; });
+      }
       if (acct) {
-        return app.acquireTokenSilent(req)
+        // Silent renewal can hang or be blocked by Safari ITP — race it with a
+        // timeout, then fall back to an interactive popup.
+        var silent = app.acquireTokenSilent({ scopes: CFG.scopes, account: acct });
+        var timeout = new Promise(function (_, rej) {
+          setTimeout(function () { rej(new Error("silent_timeout")); }, 8000);
+        });
+        return Promise.race([silent, timeout])
           .then(function (r) { return r.accessToken; })
           .catch(function () {
-            return app.acquireTokenPopup({ scopes: CFG.scopes })
-              .then(function (r) { app.setActiveAccount(r.account); notify(); return r.accessToken; });
+            if (interactive === false) throw new Error("Sign-in required.");
+            return popup();
           });
       }
       if (interactive === false) throw new Error("Not signed in.");
-      return app.acquireTokenPopup({ scopes: CFG.scopes })
-        .then(function (r) { app.setActiveAccount(r.account); notify(); return r.accessToken; });
+      return popup();
     });
   }
 
@@ -234,6 +242,7 @@
     isReady: function () { return cfgOk() && !!(window.msal && window.msal.PublicClientApplication); },
     getAccount: getAccount,
     init: ensureMsal,
+    ensureToken: function () { return getToken(true); },
     signIn: function () {
       return ensureMsal().then(function (app) {
         return app.loginPopup({ scopes: CFG.scopes }).then(function (r) {

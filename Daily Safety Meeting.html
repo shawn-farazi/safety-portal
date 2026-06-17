@@ -88,7 +88,7 @@
   </div>
 </nav>
 
-
+<div id="aiwConnBar" class="no-print"></div>
 
 <div class="app">
   <div class="toolbar no-print">
@@ -131,6 +131,7 @@
 <script src="aiw-config.js"></script>
 <script src="aiw-graph.js"></script>
 <script src="aiw-save.js"></script>
+<script src="aiw-connbar.js"></script>
 <script>
 const topics=[
 {t:'01 - Hearing Protection',s:'Protect your hearing by controlling exposure to hazardous workplace noise and using hearing protection correctly.',p:['Noise above 85 dB can damage hearing.','Watch for ringing ears or difficulty hearing.','Wear hearing protection correctly at all times.','Use engineering controls whenever possible.','Protect hearing both on and off the job.']},
@@ -167,7 +168,7 @@ function filename(){const topic=topics[qs('topicSelect').value].t.replace(/^\d+\
 function clearSignInRows(){qs('signRows').innerHTML='';for(let i=0;i<10;i++)addRow();}
 function advanceToNextTopic(){const sel=qs('topicSelect');const current=Number(sel.value)||0;const next=(current+1)%topics.length;sel.value=String(next);clearSignInRows();renderTopic();localStorage.setItem('lastSafetyTopicIndex',String(next));return topics[next].t;}
 async function makePdfBlob(){if(!window.jspdf||!window.html2canvas){throw new Error('PDF tools did not load. Use Print / Save PDF instead.')}document.body.classList.add('making-pdf');const el=qs('sheet');const canvas=await html2canvas(el,{scale:2,backgroundColor:'#ffffff',useCORS:true});document.body.classList.remove('making-pdf');const img=canvas.toDataURL('image/jpeg',0.95);const {jsPDF}=window.jspdf;const pdf=new jsPDF('p','pt','letter');const pageW=612,pageH=792,margin=24;const ratio=Math.min((pageW-margin*2)/canvas.width,(pageH-margin*2)/canvas.height);const w=canvas.width*ratio,h=canvas.height*ratio;pdf.addImage(img,'JPEG',margin,margin,w,h);return pdf.output('blob')}
-async function savePdf(){const status=qs('status');status.textContent='Creating PDF...';try{const blob=await makePdfBlob();await aiwDeliverPdf({blob:blob,filename:filename(),formKey:'meeting',shareText:'Completed safety meeting sign-in sheet',statusEl:status,onUploaded:function(ok){const nextTopic=advanceToNextTopic();status.textContent=status.textContent+' Next topic loaded: '+nextTopic+'.';}});}catch(e){document.body.classList.remove('making-pdf');status.textContent='Could not create the PDF.';console.error(e)}}
+function savePdf(){aiwRunSave({build:makePdfBlob,filename:filename(),formKey:'meeting',shareText:'Completed safety meeting sign-in sheet',statusEl:qs('status'),onUploaded:function(ok){const s=qs('status');const nextTopic=advanceToNextTopic();s.textContent=s.textContent+' Next topic loaded: '+nextTopic+'.';}});}
 function saveDraft(){}
 function loadDraft(){}
 qs('shareOneDriveBtn').onclick=savePdf;qs('newBtn').onclick=()=>{location.reload()};

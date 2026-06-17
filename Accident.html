@@ -10,6 +10,7 @@
 .ai-topnav{position:sticky;top:0;z-index:999;background:linear-gradient(135deg,#0b5fff,#0847bd);color:#fff;padding:12px 16px;box-shadow:0 2px 12px rgba(0,0,0,.18)}.ai-topnav-inner{max-width:1100px;margin:0 auto;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.ai-brand{font-weight:900;font-size:18px;letter-spacing:.02em}.ai-nav-buttons{display:flex;gap:8px;flex-wrap:wrap}.ai-nav-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:48px;padding:12px 16px;border-radius:14px;background:#fff;color:#0b2f6b;text-decoration:none;font-weight:900;border:1px solid rgba(255,255,255,.45);box-shadow:0 1px 4px rgba(0,0,0,.16);font-size:16px}.ai-nav-btn.secondary{background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.35)}@media(max-width:760px){.ai-topnav-inner{align-items:stretch}.ai-brand{width:100%;text-align:center}.ai-nav-buttons{width:100%;display:grid;grid-template-columns:1fr 1fr}.ai-nav-btn{width:100%}}@media print{.ai-topnav{display:none!important}}</style>
 </head>
 <body><nav class="ai-topnav no-print"><div class="ai-topnav-inner"><div class="ai-brand">⚙️ Advanced Ironworks Apps</div><div class="ai-nav-buttons"><a class="ai-nav-btn" href="index.html">🏠 Home</a><a class="ai-nav-btn secondary" href="javascript:history.back()">← Back</a></div></div></nav>
+<div id="aiwConnBar" class="no-print"></div>
 <div class="header"><div class="wrap"><h1>Accident / Incident Investigation Form</h1><p>Complete on iPad, then tap <b>Save PDF</b> and choose your folder from the Share Sheet.</p></div></div>
 <form id="form" class="wrap">
 <section class="card"><h2>Employee Report of Injury</h2><div class="grid">
@@ -33,6 +34,7 @@
 <script src="aiw-config.js"></script>
 <script src="aiw-graph.js"></script>
 <script src="aiw-save.js"></script>
+<script src="aiw-connbar.js"></script>
 <script>
 async function aiwMakePdfBlob(selector, filenameBase){
   if(!window.jspdf || !window.html2canvas){throw new Error('PDF tools did not load.');}
@@ -53,17 +55,8 @@ async function aiwMakePdfBlob(selector, filenameBase){
   document.body.classList.remove('making-pdf');
   return pdf.output('blob');
 }
-async function aiwSavePdf(selector, filename, shareText, formKey){
-  const status=document.getElementById('aiwPdfStatus');
-  if(status)status.textContent='Creating PDF...';
-  try{
-    const blob=await aiwMakePdfBlob(selector, filename);
-    await aiwDeliverPdf({blob:blob,filename:filename,formKey:formKey,shareText:shareText,statusEl:status});
-  }catch(e){
-    document.body.classList.remove('making-pdf');
-    console.error(e);
-    if(status)status.textContent='PDF could not be created here. Open in Safari if this app blocks file sharing.';
-  }
+function aiwSavePdf(selector, filename, shareText, formKey){
+  aiwRunSave({build:function(){return aiwMakePdfBlob(selector, filename);},filename:filename,formKey:formKey,shareText:shareText,statusEl:document.getElementById('aiwPdfStatus')});
 }
 function aiwDate(){return new Date().toISOString().slice(0,10)}
 </script>

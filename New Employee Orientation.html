@@ -17,6 +17,7 @@
 </head>
 <body>
 <nav class="ai-topnav no-print" aria-label="App navigation"><div class="ai-topnav-inner"><div class="ai-brand">⚙️ Advanced Ironworks Apps</div><div class="ai-nav-buttons"><a class="ai-nav-btn" href="index.html">🏠 Home</a><a class="ai-nav-btn secondary" href="javascript:history.back()">← Back</a></div></div></nav>
+<div id="aiwConnBar" class="no-print"></div>
 <div class="app">
   <section class="hero" id="orientationSheet"><h1>New Employee Orientation Checklist</h1><p>Complete on iPad, obtain signatures, then tap <strong>Save PDF</strong> — it saves straight to OneDrive, no folder picking.</p></section>
   <form id="orientationForm">
@@ -85,6 +86,7 @@
 <script src="aiw-config.js"></script>
 <script src="aiw-graph.js"></script>
 <script src="aiw-save.js"></script>
+<script src="aiw-connbar.js"></script>
 <script>
 const qs=id=>document.getElementById(id);
 function setupSignaturePad(canvas){const ctx=canvas.getContext('2d');function resize(){const rect=canvas.getBoundingClientRect();const old=canvas.toDataURL('image/png');canvas.width=Math.max(1,Math.round(rect.width*devicePixelRatio));canvas.height=Math.max(1,Math.round(rect.height*devicePixelRatio));ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);ctx.lineWidth=2;ctx.lineCap='round';ctx.strokeStyle='#111';const img=new Image();img.onload=()=>ctx.drawImage(img,0,0,rect.width,rect.height);img.src=old;}setTimeout(resize,50);window.addEventListener('resize',resize);let drawing=false,last=null;function pos(e){const r=canvas.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}function start(e){e.preventDefault();drawing=true;last=pos(e)}function move(e){if(!drawing)return;e.preventDefault();const p=pos(e);ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p}function end(){drawing=false;last=null}canvas.addEventListener('touchstart',start,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',end);canvas.addEventListener('mousedown',start);canvas.addEventListener('mousemove',move);window.addEventListener('mouseup',end);canvas.clear=()=>ctx.clearRect(0,0,canvas.width,canvas.height)}
@@ -123,7 +125,7 @@ function collectSummary(){const form=qs('orientationForm');const lines=[];lines.
 function emailSummary(){const subject=encodeURIComponent('New Employee Orientation - '+(document.querySelector('[name=employeeName]').value||today()));const body=encodeURIComponent(collectSummary());location.href='mailto:?subject='+subject+'&body='+body}
 async function makePdfBlob(){if(!window.jspdf||!window.html2canvas){throw new Error('PDF tools did not load. Check your connection and try again.');}const {jsPDF}=window.jspdf;const pdf=new jsPDF('p','pt','letter');const pageW=612,pageH=792,margin=22;const sections=[...document.querySelectorAll('.hero,.card')];for(let i=0;i<sections.length;i++){const canvas=await html2canvas(sections[i],{scale:2,backgroundColor:'#ffffff',useCORS:true});const img=canvas.toDataURL('image/jpeg',0.95);const ratio=Math.min((pageW-margin*2)/canvas.width,(pageH-margin*2)/canvas.height);const w=canvas.width*ratio,h=canvas.height*ratio;if(i>0)pdf.addPage();pdf.addImage(img,'JPEG',margin,margin,w,h);}return pdf.output('blob')}
 function pdfName(){const emp=(document.querySelector('[name=employeeName]').value||'Employee').replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,'');return 'New_Employee_Orientation_'+emp+'_'+today()+'.pdf'}
-async function savePdf(){const status=qs('aiwPdfStatus');if(status)status.textContent='Creating PDF...';try{const blob=await makePdfBlob();await aiwDeliverPdf({blob:blob,filename:pdfName(),formKey:'orientation',shareText:'New employee orientation checklist',statusEl:status});}catch(e){console.error(e);if(status)status.textContent=(e&&e.message)||'PDF could not be created.';}}
+function savePdf(){aiwRunSave({build:makePdfBlob,filename:pdfName(),formKey:'orientation',shareText:'New employee orientation checklist',statusEl:qs('aiwPdfStatus')});}
 function resetForm(){if(confirm('Clear this orientation form?')){qs('orientationForm').reset();document.querySelectorAll('.signature-pad').forEach(c=>c.clear());qs('ppePhotos').innerHTML='';document.querySelectorAll('input[type=date]').forEach(i=>i.value=today());}}
 qs('savePdfBtn').addEventListener('click',savePdf);qs('emailBtn').addEventListener('click',emailSummary);
 </script>

@@ -47,3 +47,39 @@ window.aiwDeliverPdf = function (opts) {
   }
   return shareFallback();
 };
+
+/* ============================================================
+   aiwRunSave — the orchestrator every form's Save button calls.
+   CRITICAL ORDER: it secures the OneDrive token FIRST (while the
+   Save tap is still a fresh user gesture, so any sign-in popup is
+   allowed), and ONLY THEN builds the PDF. Building first — which
+   can take 15-20s on long forms — used to let the gesture expire,
+   so iOS blocked the sign-in popup and the save fell back to the
+   "browse to a folder" Share Sheet. This prevents that.
+   ------------------------------------------------------------
+   aiwRunSave({ build () -> Promise<Blob>, filename, formKey,
+                shareText, statusEl, onUploaded })
+   ============================================================ */
+window.aiwRunSave = function (opts) {
+  var status = opts.statusEl || null;
+  function set(t) { if (status) status.textContent = t; }
+  function buildAndDeliver() {
+    set("Creating PDF…");
+    return Promise.resolve(opts.build()).then(function (blob) {
+      return aiwDeliverPdf({
+        blob: blob, filename: opts.filename, formKey: opts.formKey,
+        shareText: opts.shareText, statusEl: status, onUploaded: opts.onUploaded
+      });
+    }).catch(function (e) {
+      console.error(e);
+      set((e && e.message) || "Could not create the PDF.");
+    });
+  }
+  if (window.AIWGraph && AIWGraph.isConfigured()) {
+    set("Connecting to OneDrive…");
+    return AIWGraph.ensureToken().then(buildAndDeliver, function () {
+      set('Sign-in needed — tap "Sign in" at the top, then Save again.');
+    });
+  }
+  return buildAndDeliver();
+};

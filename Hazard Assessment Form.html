@@ -44,6 +44,7 @@
   </div>
 </nav>
 
+<div id="aiwConnBar" class="no-print"></div>
 <header><h1>Advanced Ironworks PPE Hazard Assessment</h1><p>iPad-friendly web form. Fill out, save as PDF, email summary, or reset for a blank assessment.</p></header>
 <main>
 <form id="ppeForm">
@@ -92,6 +93,7 @@ render();setToday();setupSignature();
 <script src="aiw-config.js"></script>
 <script src="aiw-graph.js"></script>
 <script src="aiw-save.js"></script>
+<script src="aiw-connbar.js"></script>
 <script>
 async function aiwMakePdfBlob(selector, filenameBase){
   if(!window.jspdf || !window.html2canvas){throw new Error('PDF tools did not load.');}
@@ -112,17 +114,8 @@ async function aiwMakePdfBlob(selector, filenameBase){
   document.body.classList.remove('making-pdf');
   return pdf.output('blob');
 }
-async function aiwSavePdf(selector, filename, shareText, formKey){
-  const status=document.getElementById('aiwPdfStatus');
-  if(status)status.textContent='Creating PDF...';
-  try{
-    const blob=await aiwMakePdfBlob(selector, filename);
-    await aiwDeliverPdf({blob:blob,filename:filename,formKey:formKey,shareText:shareText,statusEl:status});
-  }catch(e){
-    document.body.classList.remove('making-pdf');
-    console.error(e);
-    if(status)status.textContent='PDF could not be created here. Open in Safari if this app blocks file sharing.';
-  }
+function aiwSavePdf(selector, filename, shareText, formKey){
+  aiwRunSave({build:function(){return aiwMakePdfBlob(selector, filename);},filename:filename,formKey:formKey,shareText:shareText,statusEl:document.getElementById('aiwPdfStatus')});
 }
 function aiwDate(){return new Date().toISOString().slice(0,10)}
 </script>
