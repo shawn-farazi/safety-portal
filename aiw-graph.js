@@ -146,6 +146,13 @@
   function encPathStr(p) { return p.split("/").map(encodeURIComponent).join("/"); }
   function resolveTarget(token) {
     if (_target) return Promise.resolve(_target);
+    // Preferred: explicit drive + folder IDs. Locks every save to ONE shared
+    // folder (e.g. Shawn's), so anyone signed in (incl. MTR) writes there —
+    // not into their own same-named folder. No lookup needed.
+    if (CFG.targetDriveId && CFG.targetFolderId) {
+      _target = { driveId: CFG.targetDriveId, itemId: CFG.targetFolderId };
+      return Promise.resolve(_target);
+    }
     var path = CFG.targetFolderPath;
     var segs = path.split("/");
     var leaf = segs[segs.length - 1];
@@ -191,9 +198,9 @@
     return getToken(true).then(function (token) {
       var auth = { "Authorization": "Bearer " + token };
 
-      // MODE 1: shared destination — everything into one fixed folder
-      // (found by path/name), regardless of who is signed in.
-      if (CFG.targetFolderPath) {
+      // MODE 1: shared destination — everything into one fixed folder,
+      // regardless of who is signed in.
+      if (CFG.targetFolderId || CFG.targetFolderPath) {
         return resolveTarget(token).then(function (t) {
           var base = GRAPH + "/drives/" + t.driveId + "/items/" + t.itemId;
           // create the per-form subfolder if it isn't there yet (ignore 409)

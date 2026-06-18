@@ -40,8 +40,15 @@ window.AIW_CONFIG = {
      Leave targetFolderPath blank ("") to save to each signed-in user's
      OWN OneDrive under baseFolder below.
      ---------------------------------------------------------------- */
-  targetFolderPath: "09 SAFETY/08 Safety Records",
-  targetLabel:      "09 SAFETY / 08 Safety Records",
+  /* Locked to a SPECIFIC drive + folder by ID = Shawn's
+     "09 SAFETY / 08 Safety Records". EVERY signed-in user (including MTR on
+     the iPad) writes into THIS one shared folder — never their own
+     same-named folder. Requires Shawn to have shared this folder with them
+     (plus the Files.ReadWrite.All permission, already granted).
+     To change the destination later, replace these two IDs. */
+  targetDriveId:  "b!oHQoAYGaAUi4wdJ-miC_1QXZm5HBZlNLv0v56E4_mmZxTzHDA8UaS7vC3RMWkKrP",
+  targetFolderId: "01QCFSZVX6RYRZXBHHSBDI26M6GWKVGHFU",
+  targetLabel:    "09 SAFETY / 08 Safety Records",
 
   /* Used only when targetFolderId is blank (per-user OneDrive mode). */
   baseFolder: "Safety Records",
